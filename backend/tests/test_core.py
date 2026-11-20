@@ -1,5 +1,5 @@
 import pytest
-from app.core import validate_translations, export_segments, ruby_units
+from app.core import validate_translations, export_segments, ruby_units, translation_prompt
 
 
 def test_ids_are_mapped_not_zipped():
@@ -29,3 +29,11 @@ def test_phrase_context_and_punctuation():
     assert units[0]['pinyin'] == 'chóng'
     assert units[3]['pinyin'] == 'háng'
     assert units[-1] == {'hanzi': '。', 'pinyin': ''}
+
+
+def test_translation_targets_and_export_labels():
+    assert 'natural English' in translation_prompt('en')
+    assert 'natural Indonesian' in translation_prompt('id')
+    row = {'start_ms':0, 'end_ms':1000, 'hanzi':'你好', 'units':ruby_units('你好'), 'translation_id':'Hello'}
+    assert export_segments([row], 'txt').startswith('Translation language: English (en)')
+    assert export_segments([dict(row, translation_id='Halo')], 'txt', 'id').startswith('Translation language: Indonesian (id)')

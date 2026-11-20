@@ -1,23 +1,23 @@
 # HanziReel
 
-MVP lokal untuk belajar Mandarin dari MP4: video, Hanzi dengan pinyin bertanda nada, terjemahan Indonesia, dan koreksi tersimpan. React/TypeScript/Vite + FastAPI/SQLite. Tidak membutuhkan API key.
+Local MVP for learning Mandarin from MP4 videos: Hanzi with tone-marked pinyin, **English translations**, and saved corrections alongside a video player. Built with React/TypeScript/Vite and FastAPI/SQLite. No API key or per-request fees.
 
-## Prasyarat Windows
+## Windows prerequisites
 
-- Python 3.11 atau 3.12 dengan pip; Node.js 22.12+; PowerShell.
-- FFmpeg dan FFprobe pada PATH. Instal dari [tautan build Windows FFmpeg](https://ffmpeg.org/download.html#build-windows), ekstrak, lalu tambahkan direktori `bin` ke PATH. Uji `ffmpeg -version` dan `ffprobe -version`.
-- [Ollama untuk Windows](https://ollama.com/download/windows), jalankan aplikasinya, lalu:
+- Python 3.11 or 3.12 with pip; Node.js 22.12+; PowerShell.
+- FFmpeg and FFprobe on PATH. Install a [Windows FFmpeg build](https://ffmpeg.org/download.html#build-windows), extract it, and add its `bin` directory to PATH. Check `ffmpeg -version` and `ffprobe -version`.
+- Install and start [Ollama for Windows](https://ollama.com/download/windows), then download the translation model:
 
 ```powershell
 ollama pull qwen3:4b-instruct-2507-q4_K_M
 ollama list
 ```
 
-Tag 4-bit tersebut diverifikasi pada [registry resmi Ollama](https://ollama.com/library/qwen3:4b-instruct-2507-q4_K_M) pada 20 November 2026. Unduhan model sekitar 2,5 GB; sediakan memori tambahan untuk konteks dan inference. Jika layanan belum aktif, jalankan `ollama serve` di terminal lain.
+The model tag was verified against the [official Ollama registry](https://ollama.com/library/qwen3:4b-instruct-2507-q4_K_M) during the original MVP setup on November 20, 2026. The download is approximately 2.5 GB; allow additional memory for inference. If the service is not running, start `ollama serve` in another terminal.
 
-## Menjalankan
+## Running locally
 
-Terminal backend, dari folder proyek:
+Backend terminal, from the project directory:
 
 ```powershell
 cd C:\Kuliah\Project\HanziReel\Code
@@ -28,7 +28,7 @@ Copy-Item .env.example .env
 ..\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --env-file .env
 ```
 
-Terminal frontend:
+Frontend terminal:
 
 ```powershell
 cd C:\Kuliah\Project\HanziReel\Code\frontend
@@ -36,41 +36,51 @@ npm ci
 npm run dev
 ```
 
-Buka [HanziReel](http://127.0.0.1:5173). Proxy Vite meneruskan `/api` ke backend. API tersedia di [Swagger](http://127.0.0.1:8000/docs). Gunakan satu proses backend, tanpa `--workers` dan tanpa reload saat pemrosesan. Aplikasi ditujukan untuk localhost, bukan server publik. Untuk build frontend: `npm run build`; preview harus tetap memakai proxy API (gunakan dev server untuk alur lokal).
+Open [HanziReel](http://127.0.0.1:5173). To use the previous demo address, run `npm run dev -- --port 5174` and open [port 5174](http://127.0.0.1:5174). Vite proxies `/api` to the backend. API documentation is available in [Swagger](http://127.0.0.1:8000/docs). Run one backend process; do not use multiple workers or reload while processing. This app is intended for localhost. `npm run build` builds the frontend; use the dev server for the local workflow because production preview does not configure the API proxy.
 
-Mode demo langsung berjalan dengan frontend saja. `public/demo.mp4` merupakan klip grafis 16 detik dan nada sintetis buatan proyek (CC0), **tanpa ucapan Mandarin**. Transkrip contoh ditandai jelas dan tidak dipakai sebagai bukti akurasi transkripsi. Demo mendukung seek, sorotan, ulang segmen, dan ekspor; koreksi tersimpan tersedia pada video unggahan. Bangun ulang klip dengan `node scripts/generate-demo.mjs`.
+Demo mode works with the frontend alone. `public/demo.mp4` is an original 16-second animation with synthetic tones (CC0), **without Mandarin speech**. The sample transcript contains Hanzi, pinyin, and English translations; it is not evidence of ASR accuracy. The demo supports seek, highlighting, segment replay, and TXT/SRT export. Editing is available for uploaded videos. Rebuild the clip with `node scripts/generate-demo.mjs`.
 
-## Konfigurasi
+## Configuration
 
-Edit `backend/.env` (dimuat oleh perintah `--env-file` di atas), atau gunakan `$env:NAMA="nilai"` sebelum menjalankan backend.
+Edit `backend/.env` (loaded by `--env-file` above), or set `$env:NAME="value"` before starting the backend.
 
-| Variabel | Default | Fungsi |
+| Variable | Default | Purpose |
 | --- | --- | --- |
-| `HANZIREEL_DATA` | `Code/data` tanpa env; `../data` di contoh | SQLite dan MP4, diabaikan Git. Path relatif terhadap working directory backend. |
-| `MAX_UPLOAD_MB` | `500` | Batas ukuran unggahan |
-| `MAX_DURATION_SECONDS` | `3600` | Batas durasi |
-| `FFMPEG_PATH`, `FFPROBE_PATH` | `ffmpeg`, `ffprobe` | Nama pada PATH atau path absolut `.exe` |
-| `WHISPER_MODEL` | `small` | Ukuran/nama atau direktori model Faster-Whisper |
-| `WHISPER_DEVICE` | `cpu` | `cpu` atau `cuda` |
-| `WHISPER_COMPUTE_TYPE` | `int8` | Sesuaikan perangkat, misalnya `float16` untuk GPU |
-| `OLLAMA_URL` | `http://127.0.0.1:11434` | Layanan Ollama |
-| `OLLAMA_MODEL` | `qwen3:4b-instruct-2507-q4_K_M` | Tag model terjemahan |
+| `HANZIREEL_DATA` | `Code/data` without env; `../data` in the example | SQLite and MP4 storage, ignored by Git. Relative paths use the backend working directory. |
+| `MAX_UPLOAD_MB` | `500` | Upload size limit |
+| `MAX_DURATION_SECONDS` | `3600` | Duration limit |
+| `FFMPEG_PATH`, `FFPROBE_PATH` | `ffmpeg`, `ffprobe` | Executable names on PATH or absolute `.exe` paths |
+| `WHISPER_MODEL` | `small` | Faster-Whisper model name or directory |
+| `WHISPER_DEVICE` | `cpu` | `cpu` or `cuda` |
+| `WHISPER_COMPUTE_TYPE` | `int8` | Match the device, for example `float16` on a supported GPU |
+| `OLLAMA_URL` | `http://127.0.0.1:11434` | Local Ollama service |
+| `OLLAMA_MODEL` | `qwen3:4b-instruct-2507-q4_K_M` | Translation model tag |
 
-Faster-Whisper mengunduh model saat transkripsi pertama; setelah model terunduh, pemrosesan berjalan lokal. `large-v3-turbo` dapat dipakai lewat `WHISPER_MODEL`; ikuti [prasyarat CUDA/CTranslate2 Faster-Whisper](https://github.com/SYSTRAN/faster-whisper#gpu) jika menggunakan GPU. Klip sebaiknya memakai H.264/AAC agar browser dapat memutarnya.
+Faster-Whisper downloads its model on first transcription; subsequent processing runs locally with the cached model. Set `WHISPER_MODEL=large-v3-turbo` to use that model on a suitable machine; follow the [Faster-Whisper CUDA/CTranslate2 requirements](https://github.com/SYSTRAN/faster-whisper#gpu) for GPU use. H.264/AAC MP4 is recommended for browser playback.
 
-## Alur dan penyimpanan
+## Workflow and storage
 
-1. Pilih MP4. Backend memvalidasi kontainer, trek video/audio, ukuran, serta durasi melalui FFprobe sebelum menjalankan model.
-2. Satu worker mengekstrak WAV mono 16 kHz dan mentranskripsi dengan bahasa `zh`. Timestamp dari ASR menjadi waktu video, tanpa sinkronisasi per kata.
-3. Segmen disimpan atomik; Hanzi/pinyin langsung tersedia saat terjemahan batch berjalan. Terjemahan delapan segmen per batch dikirim dengan ID dan divalidasi lengkap sebelum disimpan. Batch yang berhasil dipertahankan jika batch lain gagal.
-4. Klik dialog untuk seek/play. `Ulangi` memutar satu kali dari awal hingga akhir segmen lalu berhenti. Batas segmen adalah `[start, end)`. Nonaktifkan `Ikuti dialog` untuk membaca bagian lain.
-5. `Edit` menyimpan Hanzi dan terjemahan. Pinyin dikonversi dengan konteks frasa; timestamp tetap. Perubahan Hanzi menandai terjemahan lama untuk diperbarui. Terjemahan yang diedit manual dilindungi dari retry, termasuk respons model yang datang setelah edit.
-6. Jika Ollama mati/model tidak tersedia/respons invalid, Hanzi dan pinyin tetap dapat dibaca. Perbaiki Ollama lalu `Coba ulang terjemahan`. Retry memproses status pending/failed/stale saja. Jika aplikasi berhenti, pekerjaan aktif ditandai terputus pada startup; retry melanjutkan dari transkrip tersimpan. WAV sementara dibersihkan.
-7. Buka ulang video melalui pilihan `Video Anda` setelah restart. Ekspor TXT atau SRT Hanzi/Indonesia melalui panel transkrip. SRT Indonesia hanya mencakup segmen dengan terjemahan tersedia, mempertahankan timestamp asli; selesaikan terjemahan dahulu untuk ekspor lengkap.
+1. Upload an MP4. The backend checks the container, video/audio tracks, size, and duration with FFprobe before running a model. New videos receive the English target (`en`).
+2. One worker extracts mono 16 kHz WAV and transcribes Mandarin (`zh`). ASR timestamps remain the source of video timing; there is no word-level synchronization.
+3. Segments are saved atomically. Hanzi/pinyin become readable while translation runs. Each batch contains up to eight segments with IDs; the entire response is validated and mapped by ID, regardless of response order. Successful batches are retained if another fails.
+4. Click a dialogue line to seek and play. `Replay` plays once from the segment start to its end, then stops. Highlight intervals are `[start, end)`. Turn off `Follow dialogue` to read elsewhere.
+5. `Edit` saves Hanzi and translation text. Pinyin uses phrase context and regenerates after Hanzi edits; timestamps stay unchanged. A Hanzi-only edit marks the old translation as stale. Manually edited translations are protected from retries, including in-flight model responses.
+6. If Ollama is unavailable, the model is missing, or a response is invalid, Hanzi/pinyin remain accessible. Fix Ollama, then choose `Retry translation`. Only pending/failed/stale segments are retried, using the video's recorded target. Interrupted jobs are marked at startup; retries reuse saved transcripts and corrections. Temporary WAV files are removed.
+7. Reopen saved videos using `Your videos` after restarting. Export TXT or SRT from the transcript panel. TXT includes a language header. Translation SRT contains only available translations with their original timestamps. Filenames identify the language: `.en.srt`, `.id.srt`, or `.zh.srt` for Hanzi.
 
-MP4/SQLite berada dalam `data/`, bukan version control. Jangan menghapus folder ini jika ingin menyimpan hasil. Validasi berlangsung setelah file diterima; penggunaan lokal tidak membatasi total ukuran request multipart sebelum parsing. Timestamp dan pemisahan kalimat bergantung kualitas ASR; tidak ada akun, YouTube, atau cloud.
+MP4 files and SQLite are stored in `data/`, outside version control. Keep this directory to retain results. Upload validation runs after multipart parsing; there is no pre-parser request-body limit. Timing and segmentation depend on ASR quality. Accounts, YouTube integration, and cloud deployment are out of scope.
 
-## Pengujian
+## Existing Indonesian translations
+
+Stop the old backend before updating, and make a backup of `data/` with the backend stopped if you need a rollback. Startup automatically migrates the original SQLite schema by adding `videos.translation_language`. Existing videos are marked `id` because the original MVP always targeted Indonesian; new videos default to `en`. Migration is transactional and repeatable. Segment text, manual edits, pinyin, order, revisions, media, and timestamps are preserved. Old saved error messages are replaced with English diagnostics.
+
+The historical `segments.translation_id` field is retained for database/API compatibility; it contains **translation text**, not a segment ID or language code. Language belongs to the video/job. The worker prompt, transcript/editor labels, progress, export options, TXT header, and download filename all follow this metadata. Existing Indonesian content remains labelled **Indonesian**, and its retries continue translating into Indonesian without overwriting edited or completed rows.
+
+There is no language picker or endpoint to create new Indonesian jobs in this release. The small target-name/prompt registry supports legacy Indonesian jobs and can be extended later. No automatic Indonesian-to-English conversion is performed.
+
+For API clients, use `kind=txt`, `kind=srt-hanzi`, or the language-neutral `kind=srt-translation`. The old `kind=srt-id` alias remains valid for Indonesian videos; `kind=srt-en` is valid for English videos. A mismatched alias returns HTTP 400 to prevent an incorrect language label. Responses also include `Content-Language`.
+
+## Tests and verification
 
 ```powershell
 cd C:\Kuliah\Project\HanziReel\Code\backend
@@ -78,10 +88,13 @@ cd C:\Kuliah\Project\HanziReel\Code\backend
 cd ..\frontend
 npm test
 npm run build
-# Dengan npm run dev aktif dan Google Chrome terinstal:
+# With the dev server running and Google Chrome installed:
+npm run test:e2e
+# If the frontend is running on port 5174:
+$env:PLAYWRIGHT_BASE_URL="http://127.0.0.1:5174"
 npm run test:e2e
 ```
 
-Uji backend memeriksa pemetaan ID (termasuk respons urutan terbalik/duplikat), pinyin frasa, SRT milidetik, edit vs respons model, retry, Ollama tidak tersedia, data setelah inisialisasi ulang, byte-range video, serta upload/ekstraksi media sungguhan dengan **ASR fixture**, bukan model. Uji upload media membutuhkan dependensi npm FFmpeg/FFprobe dan klip demo. Uji frontend memeriksa batas segmen dan gap.
+Backend tests cover ID mapping (including reversed/duplicate IDs), phrase pinyin, millisecond SRT timing, edits versus model responses, failed-batch retry, unavailable Ollama, persistence, byte-range video, migration of the original schema, and English upload-to-export processing with **mocked ASR/Ollama**. The real MP4 validation/extraction test requires the npm FFmpeg/FFprobe dev dependencies and bundled demo clip. Frontend tests cover segment boundaries, gaps, and language labels. Browser tests cover playback, demo English TXT/SRT downloads, mobile layout, and English/legacy Indonesian editor/retry labels with API fixtures.
 
-Verifikasi Mandarin nyata: rekam sendiri klip 10–20 detik berisi `你好！今天你想做什么？我想去书店买一本书。`, simpan sebagai MP4 H.264/AAC, unggah, tunggu ASR, dan cocokkan Hanzi/waktu. Matikan Ollama untuk memastikan Hanzi tetap muncul, hidupkan lagi dan retry terjemahan. Edit satu baris, restart backend, buka kembali video yang sama, lalu cocokkan koreksi dan unduhan SRT/TXT. Model Whisper dan Ollama belum diverifikasi jika belum tersedia; lihat `VERIFICATION.md` untuk pemeriksaan yang benar-benar dijalankan pada implementasi ini.
+To verify live inference, record your own 10–20 second Mandarin clip saying `你好！今天你想做什么？我想去书店买一本书。` and save it as H.264/AAC MP4. Upload it, wait for ASR and English translation, and compare Hanzi/timestamps. Stop Ollama to verify that Hanzi stays readable; restart it and retry translation. Edit a line, restart the backend, reopen the same video, and check that corrections and TXT/SRT exports persist with the English label. See [VERIFICATION.md](VERIFICATION.md) for the checks actually run and the remaining live-inference limitations.
