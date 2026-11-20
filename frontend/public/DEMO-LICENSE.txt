@@ -1,0 +1,5 @@
+demo.mp4 is an original synthetic animation and sine-wave audio fixture created
+for HanziReel with scripts/generate-demo.mjs. It contains no speech.
+The accompanying Mandarin/Indonesian dialogue was written for this project.
+These demo assets are dedicated to the public domain under CC0 1.0.
+https://creativecommons.org/publicdomain/zero/1.0/
